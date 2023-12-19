@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
 
 PLAYER_1=${PLAYER_1:-build/final_program}
