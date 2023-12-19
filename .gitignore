@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+
+build/
+generated/
+ais/
+output.json
