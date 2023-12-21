@@ -59,6 +59,18 @@ drone_scan parse_drone_scan(std::istream &in, const drone_list &drones,
   in.ignore();
   scan.drone = find_drone_by_id(drones, drone_id);
   scan.creature = find_creature_by_id(creatures, creature_id);
+  if (scan.creature == nullptr) {
+    error << "Could not find creature: " << creature_id << " in: " << std::endl;
+    for (auto &c : creatures) {
+      error << "\t" << c << std::endl;
+    }
+  }
+  if (scan.drone == nullptr) {
+    error << "Could not find drone: " << drone_id << " in: " << std::endl;
+    for (auto &d : drones) {
+      error << "\t" << d << std::endl;
+    }
+  }
   return scan;
 }
 
@@ -128,6 +140,7 @@ game_state parse_game_state(std::istream &in, const creature_list &creatures) {
     drone_t dr;
     in >> dr;
     state.my_drones.push_back(dr);
+    state.all_drones.push_back(dr);
   }
 
   int foe_drone_count;
@@ -137,14 +150,16 @@ game_state parse_game_state(std::istream &in, const creature_list &creatures) {
     drone_t dr;
     in >> dr;
     state.foe_drones.push_back(dr);
+    state.all_drones.push_back(dr);
   }
+
 
   int drone_scan_count;
   in >> drone_scan_count;
   in.ignore();
   for (int i = 0; i < drone_scan_count; i++) {
     state.drone_scans.push_back(
-        parse_drone_scan(in, state.my_drones, creatures));
+        parse_drone_scan(in, state.all_drones, creatures));
   }
 
   int visible_creature_count;

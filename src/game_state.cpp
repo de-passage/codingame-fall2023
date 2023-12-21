@@ -1,8 +1,17 @@
 #include "game_state.hpp"
 #include "logger.hpp"
 #include "types.hpp"
+#include <cmath>
 
 namespace dpsg {
+
+void persistent_game_state::reset() {
+  closest_unknowns.clear();
+  blip_positions.clear();
+  known_fish.clear();
+  carried_data.clear();
+}
+
 void compute_blip(const radar_blip& blip, persistent_game_state& p)  {
   blip_position& result = p.blip_positions[blip.creature->creature_id];
   result.creature = blip.creature;
@@ -29,10 +38,14 @@ void compute_blip(const radar_blip& blip, persistent_game_state& p)  {
   } else {
     error << "Unknown radar: " << blip.radar << std::endl;
   }
+  result.center = {
+    .x = (result.top_left.x + result.botton_right.x) / 2,
+    .y = (result.top_left.y + result.botton_right.y) / 2
+  };
 }
 
-void precompute_state(const game_state &state, persistent_game_state &p) {
-  p.blip_positions.clear();
+void precompute_state(const game_state &state, persistent_game_state &p, const creature_list& creatures) {
+  p.reset();
 
   for (const auto& b : state.radar_blips) {
     compute_blip(b, p);
@@ -45,7 +58,7 @@ void precompute_state(const game_state &state, persistent_game_state &p) {
   }
 
   for (const auto& b : p.blip_positions) {
-    debug << "Creature " << b.first << " is at position: " << b.second.top_left << " - " << b.second.botton_right << std::endl;
+    debug << "Creature " << b.first << " is at between: " << b.second.top_left << " and " << b.second.botton_right << " (center: " << b.second.center << ")" << std::endl;
   }
 
   for (auto &c : state.my_scans) {
@@ -53,6 +66,31 @@ void precompute_state(const game_state &state, persistent_game_state &p) {
   }
   for (auto &c : state.drone_scans) {
     p.known_fish.emplace(c.creature->creature_id, c.creature);
+    auto id = c.drone->drone_id;
+    if (p.carried_data.size() <= id) {
+      debug << "Resizing carried_data to " << id + 1 << std::endl;
+      p.carried_data.resize(id + 1, 0);
+    }
+    p.carried_data[id] += c.creature->type;
+  }
+
+  std::vector<blip_position> unknown_creatures;
+  for (auto &c : creatures) {
+    if (!p.is_known(c)) {
+      auto it = p.blip_positions.find(c.creature_id);
+      if (it != p.blip_positions.end()) {
+        unknown_creatures.push_back(it->second);
+      }
+    }
+  }
+
+  p.closest_unknowns.resize(state.my_drones.size());
+  for (auto &c : unknown_creatures) {
+    for (size_t i = 0; i < state.my_drones.size(); ++i) {
+      auto d = distance_squared(state.my_drones[i].pos, c.center);
+      debug << "Unknown " << c.creature->creature_id << " at: " << c.center << " distance is " << std::sqrt(d) << std::endl;
+      p.closest_unknowns[i].push(blip_by_distance{ .blip = c, .distance = d });
+    }
   }
 }
 

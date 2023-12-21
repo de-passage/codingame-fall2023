@@ -1,4 +1,5 @@
 #include "format.hpp"
+#include "logger.hpp"
 
 namespace dpsg {
 std::ostream &operator<<(std::ostream &os, const position &p) {
@@ -8,6 +9,11 @@ std::ostream &operator<<(std::ostream &os, const position &p) {
 std::ostream &operator<<(std::ostream &os, const creature_t &c) {
   return os << "creature{id:" << c.creature_id << " color:" << c.color
             << " type:" << c.type << "}";
+}
+
+std::ostream &operator<<(std::ostream &os, const drone_t &d) {
+  return os << "drone{id:" << d.drone_id << " pos:" << d.pos << " battery:" << d.battery
+            << " emergency:" << d.emergency << "}";
 }
 
 std::ostream &operator<<(std::ostream &os, const visible_creature &c) {
@@ -33,6 +39,7 @@ wait_t wait(bool light) {
 }
 
 std::ostream &operator<<(std::ostream &os, const move_to_t &m) {
+  debug << "MOVE " << m.pos.x << " " << m.pos.y << " " << m.light << std::endl;
   os << "MOVE " << m.pos.x << " " << m.pos.y;
   if (m.light) {
     os << " 1";

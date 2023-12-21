@@ -1,7 +1,7 @@
 # Thanks to Job Vranish (https://spin.atomicobject.com/2016/08/26/makefile-c-projects/)
 TARGET_EXEC := final_program
 
-OPPONENT ?= basic
+OPPONENT ?= trivial
 LOG ?= error
 
 BUILD_DIR := ./build
@@ -45,7 +45,7 @@ release: build
 	scripts/combine.bash -o $(GENERATED_SRCS) $(SRCS) $(INC_FLAGS)
 
 release-cb: release
-	xclip -i $(GENERATED_SRCS) -selection clipboard
+	scripts/to_clipboard.bash $(GENERATED_SRCS)
 
 
 run: build

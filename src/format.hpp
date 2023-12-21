@@ -19,6 +19,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 std::ostream &operator<<(std::ostream &os, const position &p);
 std::ostream &operator<<(std::ostream &os, const creature_t &c);
 std::ostream &operator<<(std::ostream &os, const visible_creature &c);
+std::ostream &operator<<(std::ostream &os, const drone_t &c);
 
 struct move_to_t {
   position pos;
