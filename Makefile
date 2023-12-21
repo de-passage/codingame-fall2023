@@ -44,6 +44,10 @@ release: build
 	@mkdir -p $(GENERATED_DIR)
 	scripts/combine.bash -o $(GENERATED_SRCS) $(SRCS) $(INC_FLAGS)
 
+release-cb: release
+	xclip -i $(GENERATED_SRCS) -selection clipboard
+
+
 run: build
 	scripts/generate_output.bash --p1 $(TARGET_PATH) --p2 ais/$(OPPONENT) -- --$(LOG)
 
@@ -64,7 +68,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: clean build release test run
+.PHONY: clean build release test run release-cb output
 clean:
 	rm -r $(BUILD_DIR)
 
