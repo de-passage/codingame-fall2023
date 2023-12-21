@@ -13,6 +13,8 @@ function err() {
   fi
 }
 
+declare -a args
+
 while (( $# > 0 )); do
   case "$1" in
     --seed)
@@ -45,10 +47,19 @@ while (( $# > 0 )); do
       OUTPUT_FILE="$2"
       shift
       ;;
+    --)
+      shift
+      args+=("$@")
+      break
+      ;;
     *) ;;
   esac
   shift
 done
+
+if [[ -n "$args" ]]; then
+  PLAYER_1+=" ${args[@]}"
+fi
 
 cmd="java --add-opens java.base/java.lang=ALL-UNNAMED -jar '$HOME/workspace/codingame-fall2023/ais/referee.jar' -p1 '${PLAYER_1}' -p2 '${PLAYER_2}' -l '${OUTPUT_FILE}'"
 if [[ -n "$SEED" ]]; then

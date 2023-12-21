@@ -2,6 +2,7 @@
 TARGET_EXEC := final_program
 
 OPPONENT ?= basic
+LOG ?= error
 
 BUILD_DIR := ./build
 SRC_DIRS := ./src
@@ -44,10 +45,10 @@ release: build
 	scripts/combine.bash -o $(GENERATED_SRCS) $(SRCS) $(INC_FLAGS)
 
 run: build
-	scripts/generate_output.bash --p1 $(TARGET_PATH) --p2 ais/$(OPPONENT)
+	scripts/generate_output.bash --p1 $(TARGET_PATH) --p2 ais/$(OPPONENT) -- --$(LOG)
 
 output: run
-	scripts/evaluate_output.bash
+	scripts/evaluate_output.bash --scores
 
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
