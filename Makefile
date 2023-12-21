@@ -43,6 +43,12 @@ release: build
 	@mkdir -p $(GENERATED_DIR)
 	scripts/combine.bash -o $(GENERATED_SRCS) $(SRCS) $(INC_FLAGS)
 
+run: build
+	scripts/generate_output.bash --p1 $(TARGET_PATH) --p2 ais/$(OPPONENT)
+
+output: run
+	scripts/evaluate_output.bash
+
 # The final build step.
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
@@ -57,7 +63,7 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-.PHONY: clean build release test
+.PHONY: clean build release test run
 clean:
 	rm -r $(BUILD_DIR)
 
