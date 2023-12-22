@@ -22,15 +22,15 @@ void compute_blip(const radar_blip &blip, computed_game_state &p) {
   switch (blip.creature->type) {
   case 0:
     result.top_left.y = std::max(2500, result.top_left.y);
-    result.botton_right.y = std::min(5000, result.top_left.y);
+    result.botton_right.y = std::min(5000, result.botton_right.y);
     break;
   case 1:
-    result.top_left.x = std::max(5000, result.top_left.x);
-    result.botton_right.x = std::min(7500, result.top_left.x);
+    result.top_left.y = std::max(5000, result.top_left.y);
+    result.botton_right.y = std::min(7500, result.botton_right.y);
     break;
   case 2:
-    result.top_left.x = std::max(7500, result.top_left.x);
-    result.botton_right.x = std::min(10000, result.top_left.x);
+    result.top_left.y = std::max(7500, result.top_left.y);
+    result.botton_right.y = std::min(10000, result.botton_right.y);
     break;
   default:
     break;
@@ -182,9 +182,16 @@ std::pair<drone_ref, long> closest_drone_distance(const input_game_state &state,
 constexpr inline static auto TYPE_COMPLETION_BONUS = 4;
 constexpr inline static auto COLOR_COMPLETION_BONUS = 3;
 
+bool catchable_fish(const creature_t& c) {
+  return c.type >= 0 && c.type < 3 && c.color >= 0 && c.color < 4;
+}
+
 int fish_value(const creature_t &c, const creature_list &creatures,
                const input_game_state &current_state,
                const computed_game_state &p) {
+  if (!catchable_fish(c)) {
+    return -1;
+  }
   // If the fish is already known, it has no more value
   if (p.my_score_board.scanned(c.type, c.color)) {
     return 0;
@@ -219,6 +226,9 @@ int fish_value(const creature_t &c, const creature_list &creatures,
 }
 
 int competitive_advantage(const creature_t &cr, const computed_game_state &st) {
+  if (!catchable_fish(cr)) {
+    return -1;
+  }
   auto total = 0;
   if (!st.foe_score_board.scanned(cr.type, cr.color)) {
     total += cr.type + 1;

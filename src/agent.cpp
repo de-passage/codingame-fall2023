@@ -34,8 +34,23 @@ struct decider {
   const input_game_state &input;
   computed_game_state &computed;
 
+  bool in_potential_light_zone(const position& drone) const {
+    for (auto v : computed.blip_positions) {
+      if (distance_squared(v.second.center, drone) <
+          sq(LIGHT_SCAN_DISTANCE)) {
+        info << "Drone " << me.drone->drone_id
+             << " is at light scan distance of " << v.second.center
+             << ", turn on the light and keep going" << std::endl;
+        return true;
+        break;
+      }
+    }
+    return false;
+  }
+
   auto go_to_surface() const -> decision_result {
-    return {move_to({me.drone->pos.x, 0}), going_to_surface{}};
+
+    return {move_to({me.drone->pos.x, 0}, in_potential_light_zone(me.drone->pos)), going_to_surface{}};
   }
 
   auto hunt_best_fish() const -> decision_result {
@@ -58,7 +73,7 @@ struct decider {
               << " is already targeted" << std::endl;
       }
     }
-    return {wait(), drifting{}};
+    return go_to_surface();
   }
 
   auto operator()(const drifting &current_state) const -> decision_result {
@@ -67,7 +82,8 @@ struct decider {
 
   auto operator()(const going_to_surface &current_state) const
       -> decision_result {
-    if (me.drone->pos.y == 0) {
+    if (computed.carried_data.at(me.drone->drone_id).competitive_advantage ==
+        0) {
       return hunt_best_fish();
     }
     return go_to_surface();
@@ -97,15 +113,30 @@ struct decider {
 
       return hunt_best_fish();
     } else if (distance_squared(me.drone->pos, current_state.blip.center) <
-               sq(LIGHT_SCAN_DISTANCE)) {
+                   sq(LIGHT_SCAN_DISTANCE) ||
+               me.drone->pos.x >= MAX_LENGTH - LIGHT_SCAN_DISTANCE - 400 ||
+               me.drone->pos.y <= LIGHT_SCAN_DISTANCE + 400 ||
+               me.drone->pos.y >= MAX_LENGTH - LIGHT_SCAN_DISTANCE - 400) {
       info << "Drone " << me.drone->drone_id << " is at light scan distance of "
            << current_state.blip.center << ", turn on the light and keep going"
            << std::endl;
       need_light = true;
     }
+
+    if (need_light == false) {
+      need_light = in_potential_light_zone(me.drone->pos);
+    }
     // Update the center of the blip
-    auto &blip = computed.blip_positions.at(current_state.blip.creature->creature_id);
-    current_state.blip.center = blip.center;
+    auto blip =
+        computed.blip_positions.find(current_state.blip.creature->creature_id);
+    if (blip == computed.blip_positions.end()) {
+      debug << "Blip " << current_state.blip.creature->creature_id
+            << " not found" << std::endl;
+      return hunt_best_fish();
+    }
+    debug << "Updating blip center of " << current_state.blip.creature
+          << std::endl;
+    current_state.blip.center = blip->second.center;
     return {move_to(current_state.blip.center, need_light), current_state};
   };
 };
