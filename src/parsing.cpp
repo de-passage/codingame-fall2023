@@ -88,8 +88,8 @@ radar_blip parse_radar_blip(std::istream &in, const drone_list &drones,
   return blip;
 }
 
-game_state parse_game_state(std::istream &in, const creature_list &creatures) {
-  game_state state;
+input_game_state parse_game_state(std::istream &in, const creature_list &creatures) {
+  input_game_state state;
   in >> state.my_score;
   in.ignore();
   in >> state.foe_score;
