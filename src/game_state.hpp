@@ -46,7 +46,7 @@ struct persistent_game_state {
                           std::vector<blip_by_distance>,
                           blip_by_distance::comparator>;
 
-  std::vector<blips_ordered_by_distance> closest_unknowns;
+  std::unordered_map<int, blips_ordered_by_distance> closest_unknowns;
   std::unordered_map<int, creature_ref> known_fish;
   std::unordered_map<int, blip_position> blip_positions;
   std::vector<int> carried_data;

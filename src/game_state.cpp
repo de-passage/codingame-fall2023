@@ -84,7 +84,6 @@ void precompute_state(const game_state &state, persistent_game_state &p, const c
     }
   }
 
-  p.closest_unknowns.resize(state.my_drones.size());
   for (auto &c : unknown_creatures) {
     for (size_t i = 0; i < state.my_drones.size(); ++i) {
       auto d = distance_squared(state.my_drones[i].pos, c.center);

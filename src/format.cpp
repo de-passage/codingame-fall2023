@@ -39,7 +39,6 @@ wait_t wait(bool light) {
 }
 
 std::ostream &operator<<(std::ostream &os, const move_to_t &m) {
-  debug << "MOVE " << m.pos.x << " " << m.pos.y << " " << m.light << std::endl;
   os << "MOVE " << m.pos.x << " " << m.pos.y;
   if (m.light) {
     os << " 1";

@@ -41,22 +41,23 @@ int main(int argc, const char **argv) {
     game_state state = parse_game_state(cin, creatures);
     precompute_state(state, persistent, creatures);
 
-    info << "My scans: " << state.my_scans.size() << ';' << std::endl;
-    for (auto &c : state.my_scans) {
-      debug << "Scanned fish: " << c << std::endl;
-    }
-
     std::unordered_set<int> targeted_creatures;
     for (size_t i = 0; i < state.my_drones.size(); ++i) {
       auto &drone = state.my_drones[i];
-      if (current_targets.size() <= i) {
+      debug << "Processing drone " << i << flush << ": " << drone << std::endl;
+      while (current_targets.size() <= i) {
         current_targets.push_back(drone.pos);
       }
       auto current_target = current_targets[i];
       bool need_light = false;
-      if (persistent.carried_data.size() > drone.drone_id && persistent.carried_data[drone.drone_id]>0) {
+      debug << "Current target: " << current_target << std::endl;
+      if (persistent.carried_data.size() > drone.drone_id &&
+          persistent.carried_data[drone.drone_id] > 0) {
+        info << "Drone " << drone.drone_id << " wants to bring data to the surface" << std::endl;
         current_target = {drone.pos.x, 0};
-      } else if (distance_squared(drone.pos, current_target) < sq(SCAN_DISTANCE)) {
+      } else if (distance_squared(drone.pos, current_target) <
+                 sq(SCAN_DISTANCE)) {
+        info << "Drone " << drone.drone_id << " is at scan distance of " << current_target << " and looking for a new target" << std::endl;
         while (!persistent.closest_unknowns[drone.drone_id].empty()) {
           auto closest = persistent.closest_unknowns[drone.drone_id].top();
           persistent.closest_unknowns[drone.drone_id].pop();
@@ -65,15 +66,16 @@ int main(int argc, const char **argv) {
             targeted_creatures.insert(closest.blip.creature->creature_id);
             current_targets[i] = closest.blip.center;
 
-            debug << "Moving toward " << closest.blip.creature->creature_id
-                  << " (" << closest.blip.center
-                  << ",distance: " << std::sqrt(closest.distance) << ")"
-                  << std::endl;
+            info << "Moving toward " << closest.blip.creature->creature_id
+                 << " (" << closest.blip.center
+                 << ",distance: " << std::sqrt(closest.distance) << ")"
+                 << std::endl;
             break;
           }
         }
       } else if (distance_squared(drone.pos, current_target) <
                  sq(LIGHT_SCAN_DISTANCE)) {
+        info << "Drone " << drone.drone_id << " is at light scan distance of " << current_target << ", turn on the light and keep going" << std::endl;
         need_light = true;
       }
       cout << move_to(current_target, need_light) << endl;
