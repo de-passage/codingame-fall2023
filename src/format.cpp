@@ -1,4 +1,5 @@
 #include "format.hpp"
+#include "game_state.hpp"
 #include "logger.hpp"
 
 namespace dpsg {
@@ -24,6 +25,10 @@ std::ostream &operator<<(std::ostream &os, const visible_creature &c) {
     os << "<null>";
   }
   return os << " pos:" << c.pos << " vx:" << c.vx << " vy:" << c.vy << "}";
+}
+
+std::ostream&operator<<(std::ostream& os, const blip_position& b) {
+  return os << "blip{fish:" << b.creature->creature_id << " center:" << b.center << "}";
 }
 
 std::ostream& operator<<(std::ostream& os, creature_ref b) {

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "game_state.hpp"
 #include "types.hpp"
 #include <iostream>
 
@@ -21,4 +22,5 @@ std::ostream &operator<<(std::ostream &os, const creature_t &c);
 std::ostream &operator<<(std::ostream &os, const visible_creature &c);
 std::ostream& operator<<(std::ostream& os, creature_ref b);
 std::ostream &operator<<(std::ostream &os, const drone_t &c);
+std::ostream&operator<<(std::ostream& os, const blip_position& b);
 }

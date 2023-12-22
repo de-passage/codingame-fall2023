@@ -29,8 +29,8 @@ void compute_blip(const radar_blip &blip, computed_game_state &p) {
     result.botton_right.x = std::min(7500, result.top_left.x);
     break;
   case 2:
-    result.top_left.x = std::max(5000, result.top_left.x);
-    result.botton_right.x = std::min(7500, result.top_left.x);
+    result.top_left.x = std::max(7500, result.top_left.x);
+    result.botton_right.x = std::min(10000, result.top_left.x);
     break;
   default:
     break;
@@ -139,11 +139,11 @@ void precompute_state(const input_game_state &state, computed_game_state &p,
                            computed_game_state::blips_ordered_by_value{});
   }
   for (auto &c : p.unknown_creatures) {
-    for (size_t i = 0; i < state.my_drones.size(); ++i) {
-      auto d = distance_squared(state.my_drones[i].pos, c.center);
-      p.closest_unknowns[i].push(blip_by_distance{{.value = c, .order = d}});
+    for (auto& drone : state.my_drones) {
+      auto d = distance_squared(state.my_drones[drone.drone_id].pos, c.center);
+      p.closest_unknowns[drone.drone_id].push(blip_by_distance{{.value = c, .order = d}});
       auto v = fish_value(*c.creature, creatures, state, p);
-      p.best_targets[i].push(blip_by_fish_value{{.value = c, .order = v}});
+      p.best_targets[drone.drone_id].push(blip_by_fish_value{{.value = c, .order = v}});
       debug << "Unknown " << c.creature->creature_id << " at: " << c.center
             << " distance is " << std::sqrt(d) << " value is " << v
             << std::endl;
