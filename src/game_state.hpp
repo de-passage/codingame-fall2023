@@ -111,6 +111,10 @@ struct score_board {
   inline bool scanned(int type, int color) const {
     return states[type][color] >= State::scanned;
   }
+
+  inline bool scanned(const creature_t &c) const {
+    return scanned(c.type, c.color);
+  }
 };
 
 template<class T>

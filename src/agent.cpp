@@ -36,7 +36,7 @@ struct decider {
 
   bool in_potential_light_zone(const position& drone) const {
     for (auto v : computed.blip_positions) {
-      if (distance_squared(v.second.center, drone) <
+      if (!computed.my_score_board.scanned(*v.second.creature) && distance_squared(v.second.center, drone) <
           sq(LIGHT_SCAN_DISTANCE)) {
         info << "Drone " << me.drone->drone_id
              << " is at light scan distance of " << v.second.center
@@ -66,6 +66,20 @@ struct decider {
         computed.targeted_creatures.insert(
             top_of_queue.value.creature->creature_id);
         target = top_of_queue;
+
+
+        constexpr auto DANGER = (1400 + 400) / 2;
+        if (abs(me.drone->pos.x - target.value.center.x) < DANGER) {
+          return {wait(true), drifting{}};
+        }
+
+        for (auto &b : computed.blip_positions) {
+          if (abs(b.second.center.x - me.drone->pos.x) < DANGER &&
+              abs(b.second.center.y - me.drone->pos.y) < DANGER &&
+              !computed.my_score_board.scanned(*b.second.creature)) {
+            return {wait(true), drifting{}};
+          }
+        }
         return {move_to(target.value.center),
                 hunting_fish{target.value.creature, target.value}};
       } else {
@@ -124,7 +138,7 @@ struct decider {
     }
 
     if (need_light == false) {
-      need_light = in_potential_light_zone(me.drone->pos);
+      need_light = me.drone->battery > 10 && in_potential_light_zone(me.drone->pos);
     }
     // Update the center of the blip
     auto blip =
